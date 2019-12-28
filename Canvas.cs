@@ -1,3 +1,4 @@
+using System;
 using SFML.Graphics;
 using SFML.System;
 
@@ -5,14 +6,14 @@ namespace game_of_life
 {
     public class Canvas
     {
-        public readonly int[,] canvas;
+        public Cell[,] canvas;
         public VertexArray grid;
 
         private uint length;
         private uint width;
 
-        ///<param name="row">Define the number of rows</param>
-        ///<param name="column">Define the number of columns</param>
+        ///<param name="length">Define the length of the cell</param>
+        ///<param name="width">Define the width of the cell</param>
         public Canvas(uint length, uint width){
             this.length = length;
             this.width = width;
@@ -41,7 +42,8 @@ namespace game_of_life
                 vertexArray.Append(new Vertex(){Position = new Vector2f(width*column+2,(y*length)+2),Color=Color.Red}); //change 2 for our thickness and 100 for length
                 vertexArray.Append(new Vertex(){Position = new Vector2f(0,(y*length)+2),Color=Color.Red});
             }
-            this.grid = vertexArray;
+            grid = vertexArray;
+            canvas = new Cell[row,column]; //Create our internal grid
             return vertexArray;
         }
 
@@ -60,6 +62,17 @@ namespace game_of_life
             vertexArray[2] = (new Vertex(){Position = new Vector2f(width+(width*x),length+(length*y)),Color=Color.Black});
             vertexArray[3] = (new Vertex(){Position = new Vector2f(boxOffset+(width*x),length+(length*y)),Color=Color.Black});
             return vertexArray;
+        }
+
+        public void SetupInternalCanvas()
+        {
+            for (int i = 0; i < canvas.GetLength(0); i++)
+            {
+                for (int j = 0; j < canvas.GetLength(1); j++)
+                {
+                    canvas[i,j] = new Cell();
+                }
+            }
         }
     }
 }

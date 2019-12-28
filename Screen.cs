@@ -4,6 +4,7 @@ using SFML.Window;
 using System.Collections.Generic;
 using System;
 using System.Numerics;
+using System.Linq;
 
 namespace game_of_life
 {
@@ -92,57 +93,16 @@ namespace game_of_life
             
         }
 
-        private List<RectangleShape> DrawGrid(int size = 50, int gridNumber = 50){
-            List<RectangleShape> rectangles = new List<RectangleShape>();
-
-            float rectSizeX = window.Size.X / 20;
-            float rectSizeY = window.Size.Y / 20;
-
-            bool alt_color = false;
-
-            for(int y = 0; y < size;y++){
-                for(int x = 0; x < size; x++){
-                    rectangles.Add(new RectangleShape(new Vector2f(rectSizeX,rectSizeY)){
-                        Position = new Vector2f(rectSizeX*x,rectSizeY*y),
-                        OutlineColor = Color.Black,
-                        FillColor = alt_color ? Color.Red:Color.Blue,
-                        OutlineThickness = 1.5f,
-                    });
-                    alt_color = !alt_color;
-                }
-            }
-            return rectangles;
-        }
-
         public void Game(){
             view.Center = new Vector2f(0,0);
             window.SetView(view);
 
-            VertexArray triangle = new VertexArray(PrimitiveType.Triangles,3);
-            triangle.Append(new Vertex(){Position = new Vector2f(200,200),Color=Color.Red});
-            triangle.Append(new Vertex(){Position = new Vector2f(300,200),Color=Color.Red});
-            triangle.Append(new Vertex(){Position = new Vector2f(300,300),Color=Color.Red});
-
-
             var l = new Canvas(23,27);
             var rectangle = new VertexArray(PrimitiveType.Quads);
-
-            for (int x = 0; x < 20; x++)
-            {
-                for (int y = 0; y < 20; y++)
-                {
-                    var v = l.DrawCells((uint)new Random().Next(0,400),(uint)new Random().Next(0,400),2);
-                    foreach (var item in v)
-                    {
-                        rectangle.Append(item);
-                    }
-                }
-            }
-
-            l.CreateCanvas(20,20);
-
+            l.CreateCanvas(400,400);
+            l.SetupInternalCanvas();
+            
             Clock clock = new Clock();
-
             while(window.IsOpen){
                 //Calculate framerate
                 float Framerate = 1f / clock.ElapsedTime.AsSeconds();
@@ -156,6 +116,23 @@ namespace game_of_life
                 fps.Position = new Vector2f(view.Center.X-380,view.Center.Y-300);                
                 window.Draw(fps);
                 window.Draw(l.grid);
+
+                rectangle.Clear();
+                for (int i = 0; i < l.canvas.GetLength(0); i++)
+                {
+                    for (int y = 0; y < l.canvas.GetLength(1); y++)
+                    {
+                        l.canvas[i,y].Update();
+                        if(l.canvas[i,y].cellState == CellState.Alive){
+                            var v = l.DrawCells((uint)i,(uint)y,2);
+                            for(int j = 0; j < v.Length; j++)
+                            {
+                                rectangle.Append(v[j]);
+                            }
+                        }
+                    }
+                }
+
                 window.Draw(rectangle);
 
                 window.Display();
