@@ -124,14 +124,14 @@ namespace game_of_life
             triangle.Append(new Vertex(){Position = new Vector2f(300,300),Color=Color.Red});
 
 
-            var l = new Canvas();
+            var l = new Canvas(23,27);
             var rectangle = new VertexArray(PrimitiveType.Quads);
 
             for (int x = 0; x < 20; x++)
             {
                 for (int y = 0; y < 20; y++)
                 {
-                    var v = l.DrawCells((uint)new Random().Next(0,400),(uint)new Random().Next(0,400),23,27,2);
+                    var v = l.DrawCells((uint)new Random().Next(0,400),(uint)new Random().Next(0,400),2);
                     foreach (var item in v)
                     {
                         rectangle.Append(item);
@@ -139,7 +139,7 @@ namespace game_of_life
                 }
             }
 
-            l.CreateCanvas(gridLengthX:32*594,gridLengthY:32*594);
+            l.CreateCanvas(20,20);
 
             Clock clock = new Clock();
 
