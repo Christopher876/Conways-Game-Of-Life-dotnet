@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System;
 using System.Numerics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace game_of_life
 {
@@ -99,14 +101,23 @@ namespace game_of_life
 
             var l = new Canvas(23,27);
             var rectangle = new VertexArray(PrimitiveType.Quads);
-            l.CreateCanvas(400,400);
+            l.CreateCanvas(100,100);
             l.SetupInternalCanvas();
+
+            l.canvas[0,1].cellState = CellState.Alive;
+            l.canvas[5,8].cellState = CellState.Alive;
+            l.canvas[7,7].cellState = CellState.Alive;
+            l.canvas[0,99].cellState = CellState.Alive;
+            l.canvas[99,99].cellState = CellState.Alive;
+            l.canvas[99,0].cellState = CellState.Alive;
             
             Clock clock = new Clock();
             while(window.IsOpen){
                 //Calculate framerate
                 float Framerate = 1f / clock.ElapsedTime.AsSeconds();
                 clock.Restart();
+
+                l.DrawCells(2);
 
                 window.Clear(backgroundColor);
                 window.DispatchEvents();
@@ -117,23 +128,7 @@ namespace game_of_life
                 window.Draw(fps);
                 window.Draw(l.grid);
 
-                rectangle.Clear();
-                for (int i = 0; i < l.canvas.GetLength(0); i++)
-                {
-                    for (int y = 0; y < l.canvas.GetLength(1); y++)
-                    {
-                        l.canvas[i,y].Update();
-                        if(l.canvas[i,y].cellState == CellState.Alive){
-                            var v = l.DrawCells((uint)i,(uint)y,2);
-                            for(int j = 0; j < v.Length; j++)
-                            {
-                                rectangle.Append(v[j]);
-                            }
-                        }
-                    }
-                }
-
-                window.Draw(rectangle);
+                window.Draw(l.aliveCells);
 
                 window.Display();
             }

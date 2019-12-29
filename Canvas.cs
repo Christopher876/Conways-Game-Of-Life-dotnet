@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.System;
 
@@ -8,6 +10,7 @@ namespace game_of_life
     {
         public Cell[,] canvas;
         public VertexArray grid;
+        public VertexArray aliveCells;
 
         private uint length;
         private uint width;
@@ -17,6 +20,7 @@ namespace game_of_life
         public Canvas(uint length, uint width){
             this.length = length;
             this.width = width;
+            this.aliveCells = new VertexArray(PrimitiveType.Quads);
         }
 
         /// <summary>
@@ -62,6 +66,36 @@ namespace game_of_life
             vertexArray[2] = (new Vertex(){Position = new Vector2f(width+(width*x),length+(length*y)),Color=Color.Black});
             vertexArray[3] = (new Vertex(){Position = new Vector2f(boxOffset+(width*x),length+(length*y)),Color=Color.Black});
             return vertexArray;
+        }
+
+        public Task<List<Tuple<int,int>>> CheckCells(){
+            List<Tuple<int,int>> aliveCells = new List<Tuple<int,int>>();
+            
+            for (int i = 0; i < canvas.GetLength(0); i++)
+            {
+                for (int y = 0; y < canvas.GetLength(1); y++)
+                {
+                    canvas[i,y].Update();
+                    if(canvas[i,y].cellState == CellState.Alive){
+                        aliveCells.Add(Tuple.Create(i,y));
+                    }
+                }
+            }
+
+            return Task.FromResult(aliveCells);
+        }
+
+        public async void DrawCells(int boxOffset){
+            aliveCells.Clear();
+            var t = await CheckCells();
+
+            for (int i = 0; i < t.Count; i++)
+            {
+                aliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
+                aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
+                aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
+                aliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
+            }
         }
 
         public void SetupInternalCanvas()

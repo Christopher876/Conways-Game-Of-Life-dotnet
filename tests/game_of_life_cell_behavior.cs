@@ -6,14 +6,12 @@ namespace game_of_life.tests
     public class test1
     {
         [Test]
-        public void Test1(){
-            int i = 0;
-            Assert.Pass();
-        }
-
-        [Test]
-        public void Test2(){
-            Assert.Fail();
+        public void game_of_life_CellIsDead_ShouldComeBackToLife(){
+            Cell cell = new Cell();
+            cell.cellState = CellState.Dead;
+            cell.Update(3);
+            Assert.AreEqual(CellState.Alive,cell.cellState);
         }   
+
     }
 }
