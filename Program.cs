@@ -6,7 +6,7 @@ namespace game_of_life
     {
         static void Main(string[] args)
         {
-            Screen screen = new Screen(800,600,"Game of Life");
+            Screen screen = new Screen(1920,1080,"Game of Life");
             screen.Game();
         }
     }

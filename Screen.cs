@@ -20,19 +20,19 @@ namespace game_of_life
         private Font sourceCodeFont;
         private Text fps;
         private Color backgroundColor;
-        private uint panSpeed = 10;
+        private uint panSpeed = 50;
         public Screen(uint width,uint height,string title){
             this.videoMode = new VideoMode();
             this.videoMode.Width = width;
             this.videoMode.Height = height;
             this.window = new RenderWindow(videoMode,this.title,Styles.Default);
-            //this.window.SetFramerateLimit(60);
+            this.window.SetFramerateLimit(60);
             this.title = title;
             this.fontSize = (uint)(window.Size.X/9/2);
             this.sourceCodeFont = new Font(@"SourceCodeVariable-Roman.ttf");
 
             this.view = window.GetView();
-            this.view.Center = new Vector2f(1965,1020);
+            this.view.Center = new Vector2f(2510,1340);
             this.window.SetView(this.view);
             
             this.fps = new Text(){
@@ -52,7 +52,8 @@ namespace game_of_life
             };
             this.window.Resized += (sender,e) => {
                 this.view.Size = (Vector2f)window.Size * 2;
-                window.SetView(this.view);
+                this.view.Center = new Vector2f(2510,1340);
+                this.window.SetView(this.view);
             };
         }
 
@@ -100,16 +101,8 @@ namespace game_of_life
             window.SetView(view);
 
             var l = new Canvas(23,27);
-            var rectangle = new VertexArray(PrimitiveType.Quads);
-            l.CreateCanvas(100,100);
-            l.SetupInternalCanvas();
-
-            l.canvas[0,1].cellState = CellState.Alive;
-            l.canvas[5,8].cellState = CellState.Alive;
-            l.canvas[7,7].cellState = CellState.Alive;
-            l.canvas[0,99].cellState = CellState.Alive;
-            l.canvas[99,99].cellState = CellState.Alive;
-            l.canvas[99,0].cellState = CellState.Alive;
+            l.CreateCanvas(400,400);
+            l.GenerateStarters();
             
             Clock clock = new Clock();
             while(window.IsOpen){
@@ -126,11 +119,12 @@ namespace game_of_life
                 fps.DisplayedString = String.Format("{0:0.##}",Framerate);
                 fps.Position = new Vector2f(view.Center.X-380,view.Center.Y-300);                
                 window.Draw(fps);
-                window.Draw(l.grid);
 
+                window.Draw(l.grid);
                 window.Draw(l.aliveCells);
 
                 window.Display();
+                Thread.Sleep(10); //Sleep here so that the game does not run too fast
             }
         }   
     }

@@ -46,9 +46,32 @@ namespace game_of_life
                 vertexArray.Append(new Vertex(){Position = new Vector2f(width*column+2,(y*length)+2),Color=Color.Red}); //change 2 for our thickness and 100 for length
                 vertexArray.Append(new Vertex(){Position = new Vector2f(0,(y*length)+2),Color=Color.Red});
             }
+
             grid = vertexArray;
             canvas = new Cell[row,column]; //Create our internal grid
+            //Initialize the canvas array
+            for (int i = 0; i < canvas.GetLength(0); i++)
+            {
+                for (int j = 0; j < canvas.GetLength(1); j++)
+                {
+                    canvas[i,j] = new Cell();
+                }
+            }
             return vertexArray;
+        }
+
+        /// <summary>
+        /// Generate the starting positions of the alive cells using a range.
+        /// </summary>
+        /// <param name="minimum">The minimum number of cells to generate</param>
+        /// <param name="maximum">The maximum number of cells to generate</param>
+        public void GenerateStarters(int minimum, int maximum){
+            var r = new Random();
+            var j = r.Next(minimum,maximum);
+            for (int i = 0; i < j; i++)
+            {
+                canvas[r.Next(0,canvas.GetLength(0)-1),r.Next(0,canvas.GetLength(1)-1)].cellState = CellState.Alive;
+            }
         }
 
         /// <summary>
@@ -67,15 +90,42 @@ namespace game_of_life
             vertexArray[3] = (new Vertex(){Position = new Vector2f(boxOffset+(width*x),length+(length*y)),Color=Color.Black});
             return vertexArray;
         }
-
+        /// <summary>
+        /// Check which cells should live to the next generation and which should die.
+        /// </summary>
+        /// <returns>Async Tuple containing all cells to draw</returns>
         public Task<List<Tuple<int,int>>> CheckCells(){
             List<Tuple<int,int>> aliveCells = new List<Tuple<int,int>>();
-            
+            Cell[,] grid2 = new Cell[canvas.GetLength(0),canvas.GetLength(1)]; //Copy the grid so that the original won't be modified while we change cell states
+
             for (int i = 0; i < canvas.GetLength(0); i++)
             {
-                for (int y = 0; y < canvas.GetLength(1); y++)
+                for (int j = 0; j < canvas.GetLength(1); j++)
                 {
-                    canvas[i,y].Update();
+                    grid2[i,j] = canvas[i,j];
+                }
+            }
+
+            for (int i = 1; i < canvas.GetLength(0); i++) //Moving down rows
+            {
+                for (int y = 1; y < canvas.GetLength(1); y++) //Moving across the columns
+                {
+                    int neighbors = 0;
+ 
+                    //Check around the cells for any neighbors
+                    for (int a = -1; a < 2; a++)
+                    {
+                        for (int b = -1; b < 2; b++)
+                        {
+                            if(!(a == 0 && b ==0) && !(i == canvas.GetLength(0)-1 || y == canvas.GetLength(1)-1))
+                                if(grid2[i+a,y+b].cellState == CellState.Alive)
+                                    neighbors++;
+                        }
+                    }
+
+                    canvas[i,y].Update(neighbors); //Cell check which state he should be in
+
+                    //Add our cell to the array to be drawn
                     if(canvas[i,y].cellState == CellState.Alive){
                         aliveCells.Add(Tuple.Create(i,y));
                     }
@@ -85,6 +135,10 @@ namespace game_of_life
             return Task.FromResult(aliveCells);
         }
 
+        /// <summary>
+        /// Check and create the cells to be drawn to the screen.
+        /// </summary>
+        /// <param name="boxOffset">The offset of the drawing of the box</param>
         public async void DrawCells(int boxOffset){
             aliveCells.Clear();
             var t = await CheckCells();
@@ -95,17 +149,6 @@ namespace game_of_life
                 aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
                 aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
                 aliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
-            }
-        }
-
-        public void SetupInternalCanvas()
-        {
-            for (int i = 0; i < canvas.GetLength(0); i++)
-            {
-                for (int j = 0; j < canvas.GetLength(1); j++)
-                {
-                    canvas[i,j] = new Cell();
-                }
             }
         }
     }
