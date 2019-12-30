@@ -21,6 +21,7 @@ namespace game_of_life
         private Text fps;
         private Color backgroundColor;
         private uint panSpeed = 50;
+        private Canvas canvas;
         public Screen(uint width,uint height,string title){
             this.videoMode = new VideoMode();
             this.videoMode.Width = width;
@@ -42,6 +43,8 @@ namespace game_of_life
                 Style = Text.Styles.Bold
             };
             this.backgroundColor = Color.White;
+
+            this.canvas = new Canvas(23,27);
 
             //Setup key events
             this.window.KeyPressed += Window_KeyPressed;
@@ -91,6 +94,13 @@ namespace game_of_life
                     Math.Clamp(view.Size.X,0,1584);
                     Math.Clamp(view.Size.Y,0,1188);
                     break;
+                case Keyboard.Key.G:
+                    canvas.KillAllCells();
+                    canvas.GenerateStarters(1000,4000);
+                    break;
+                case Keyboard.Key.K:
+                    canvas.KillAllCells();
+                    break;
             }
             Console.WriteLine($"Camera View: {view.Center}");            
             
@@ -100,9 +110,7 @@ namespace game_of_life
             view.Center = new Vector2f(0,0);
             window.SetView(view);
 
-            var l = new Canvas(23,27);
-            l.CreateCanvas(400,400);
-            l.GenerateStarters();
+            canvas.CreateCanvas(200,200);
             
             Clock clock = new Clock();
             while(window.IsOpen){
@@ -110,7 +118,7 @@ namespace game_of_life
                 float Framerate = 1f / clock.ElapsedTime.AsSeconds();
                 clock.Restart();
 
-                l.DrawCells(2);
+                canvas.DrawCells(2);
 
                 window.Clear(backgroundColor);
                 window.DispatchEvents();
@@ -120,8 +128,8 @@ namespace game_of_life
                 fps.Position = new Vector2f(view.Center.X-380,view.Center.Y-300);                
                 window.Draw(fps);
 
-                window.Draw(l.grid);
-                window.Draw(l.aliveCells);
+                window.Draw(canvas.grid);
+                window.Draw(canvas.aliveCells);
 
                 window.Display();
                 Thread.Sleep(10); //Sleep here so that the game does not run too fast

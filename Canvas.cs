@@ -74,6 +74,18 @@ namespace game_of_life
             }
         }
 
+        public void KillAllCells(){
+            for (int i = 0; i < canvas.GetLength(0); i++)
+            {
+                for (int j = 0; j < canvas.GetLength(1); j++)
+                {
+                    lock(canvas){
+                        canvas[i,j].cellState = CellState.Dead;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Fill any cell in the grid with a Color
         /// </summary>
@@ -93,10 +105,10 @@ namespace game_of_life
         /// <summary>
         /// Check which cells should live to the next generation and which should die.
         /// </summary>
-        /// <returns>Async Tuple containing all cells to draw</returns>
-        public Task<List<Tuple<int,int>>> CheckCells(){
+        /// <returns>Tuple containing all cells to draw</returns>
+        public List<Tuple<int,int>> CheckCells(){
             List<Tuple<int,int>> aliveCells = new List<Tuple<int,int>>();
-            Cell[,] grid2 = new Cell[canvas.GetLength(0),canvas.GetLength(1)]; //Copy the grid so that the original won't be modified while we change cell states
+            Cell[,] grid2 = new Cell[canvas.GetLength(0)+1,canvas.GetLength(1)+1]; //Copy the grid so that the original won't be modified while we change cell states
 
             for (int i = 0; i < canvas.GetLength(0); i++)
             {
@@ -132,16 +144,16 @@ namespace game_of_life
                 }
             }
 
-            return Task.FromResult(aliveCells);
+            return aliveCells;
         }
 
         /// <summary>
         /// Check and create the cells to be drawn to the screen.
         /// </summary>
         /// <param name="boxOffset">The offset of the drawing of the box</param>
-        public async void DrawCells(int boxOffset){
+        public void DrawCells(int boxOffset){
             aliveCells.Clear();
-            var t = await CheckCells();
+            var t = CheckCells();
 
             for (int i = 0; i < t.Count; i++)
             {

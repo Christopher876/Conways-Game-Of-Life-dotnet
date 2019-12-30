@@ -6,10 +6,10 @@ namespace game_of_life.tests
     public class test1
     {
         [Test]
-        public void game_of_life_CellIsDead_ShouldComeBackToLife(){
+        public void game_of_life_CellIsDead_ShouldComeBackToLife([Values(3)] int i){
             Cell cell = new Cell();
             cell.cellState = CellState.Dead;
-            cell.Update(3);
+            cell.Update(i);
             Assert.AreEqual(CellState.Alive,cell.cellState);
         }   
 

@@ -31,7 +31,7 @@ namespace game_of_life
                     cellState = CellState.Dead;
                     break;
                 //Cell lives to next generation
-                case int n when (neighbors == 2 || neighbors == 3 && cellState == CellState.Alive):
+                case int n when ((neighbors == 2 || neighbors == 3) && cellState == CellState.Alive):
                     break;
                 //Dies from overpopulation
                 case int n when (neighbors > 3):
