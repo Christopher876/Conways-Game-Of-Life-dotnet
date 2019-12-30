@@ -118,9 +118,9 @@ namespace game_of_life
                 }
             }
 
-            for (int i = 1; i < canvas.GetLength(0); i++) //Moving down rows
+            for (int i = 0; i < canvas.GetLength(0); i++) //Moving down rows
             {
-                for (int y = 1; y < canvas.GetLength(1); y++) //Moving across the columns
+                for (int y = 0; y < canvas.GetLength(1); y++) //Moving across the columns
                 {
                     int neighbors = 0;
  
@@ -129,13 +129,13 @@ namespace game_of_life
                     {
                         for (int b = -1; b < 2; b++)
                         {
-                            if(!(a == 0 && b ==0) && !(i == canvas.GetLength(0)-1 || y == canvas.GetLength(1)-1))
-                                if(grid2[i+a,y+b].cellState == CellState.Alive)
+                            if(!(a == 0 && b == 0)) //Do not count self
+                                if(grid2[(i + a + canvas.GetLength(0)) % canvas.GetLength(0),(y + b + canvas.GetLength(1)) % canvas.GetLength(1)].cellState == CellState.Alive)
                                     neighbors++;
                         }
                     }
 
-                    canvas[i,y].Update(neighbors); //Cell check which state he should be in
+                    canvas[i,y].Update(neighbors); //Cell check which state it should be in
 
                     //Add our cell to the array to be drawn
                     if(canvas[i,y].cellState == CellState.Alive){

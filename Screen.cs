@@ -96,7 +96,7 @@ namespace game_of_life
                     break;
                 case Keyboard.Key.G:
                     canvas.KillAllCells();
-                    canvas.GenerateStarters(1000,4000);
+                    canvas.GenerateStarters(7000,11000);
                     break;
                 case Keyboard.Key.K:
                     canvas.KillAllCells();
@@ -110,7 +110,7 @@ namespace game_of_life
             view.Center = new Vector2f(0,0);
             window.SetView(view);
 
-            canvas.CreateCanvas(200,200);
+            canvas.CreateCanvas(700,700);
             
             Clock clock = new Clock();
             while(window.IsOpen){
