@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using SFML.Graphics;
 using SFML.System;
 
@@ -8,19 +7,25 @@ namespace game_of_life
 {
     public class Canvas
     {
-        public Cell[,] canvas;
-        public VertexArray grid;
-        public VertexArray aliveCells;
+        private Cell[,] canvas;
+        public VertexArray Grid;
+        public readonly VertexArray AliveCells;
 
-        private uint length;
-        private uint width;
+        private readonly uint length;
+        private readonly uint width;
+        private int maxRange;
+        private int minRange;
 
-        ///<param name="length">Define the length of the cell</param>
-        ///<param name="width">Define the width of the cell</param>
-        public Canvas(uint length, uint width){
+        /// <param name="length">Define the length of the cell</param>
+        /// <param name="width">Define the width of the cell</param>
+        /// <param name="minRange">Define the minimum range of the starter generator</param>
+        /// <param name="maxRange">Define the maximum range of the starter generator</param>
+        public Canvas(uint length=23, uint width=27, int minRange=30, int maxRange=2000){
             this.length = length;
             this.width = width;
-            this.aliveCells = new VertexArray(PrimitiveType.Quads);
+            AliveCells = new VertexArray(PrimitiveType.Quads);
+            this.minRange = minRange;
+            this.maxRange = maxRange;
         }
 
         /// <summary>
@@ -47,7 +52,7 @@ namespace game_of_life
                 vertexArray.Append(new Vertex(){Position = new Vector2f(0,(y*length)+2),Color=Color.Red});
             }
 
-            grid = vertexArray;
+            Grid = vertexArray;
             canvas = new Cell[row,column]; //Create our internal grid
             //Initialize the canvas array
             for (int i = 0; i < canvas.GetLength(0); i++)
@@ -57,6 +62,7 @@ namespace game_of_life
                     canvas[i,j] = new Cell();
                 }
             }
+
             return vertexArray;
         }
 
@@ -73,7 +79,10 @@ namespace game_of_life
                 canvas[r.Next(0,canvas.GetLength(0)-1),r.Next(0,canvas.GetLength(1)-1)].cellState = CellState.Alive;
             }
         }
-
+        
+        /// <summary>
+        /// Kill all the cells currently on the screen
+        /// </summary>
         public void KillAllCells(){
             for (int i = 0; i < canvas.GetLength(0); i++)
             {
@@ -106,7 +115,7 @@ namespace game_of_life
         /// Check which cells should live to the next generation and which should die.
         /// </summary>
         /// <returns>Tuple containing all cells to draw</returns>
-        public List<Tuple<int,int>> CheckCells(){
+        private List<Tuple<int,int>> CheckCells(){
             List<Tuple<int,int>> aliveCells = new List<Tuple<int,int>>();
             Cell[,] grid2 = new Cell[canvas.GetLength(0)+1,canvas.GetLength(1)+1]; //Copy the grid so that the original won't be modified while we change cell states
 
@@ -129,9 +138,9 @@ namespace game_of_life
                     {
                         for (int b = -1; b < 2; b++)
                         {
-                            if(!(a == 0 && b == 0)) //Do not count self
-                                if(grid2[(i + a + canvas.GetLength(0)) % canvas.GetLength(0),(y + b + canvas.GetLength(1)) % canvas.GetLength(1)].cellState == CellState.Alive)
-                                    neighbors++;
+                            if (a == 0 && b == 0) continue; //Do not count self
+                            if(grid2[(i + a + canvas.GetLength(0)) % canvas.GetLength(0),(y + b + canvas.GetLength(1)) % canvas.GetLength(1)].cellState == CellState.Alive)
+                                neighbors++;
                         }
                     }
 
@@ -152,15 +161,15 @@ namespace game_of_life
         /// </summary>
         /// <param name="boxOffset">The offset of the drawing of the box</param>
         public void DrawCells(int boxOffset){
-            aliveCells.Clear();
+            AliveCells.Clear();
             var t = CheckCells();
 
             for (int i = 0; i < t.Count; i++)
             {
-                aliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
-                aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
-                aliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
-                aliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
+                AliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
+                AliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),boxOffset+(length*t[i].Item2)),Color=Color.Black});
+                AliveCells.Append(new Vertex(){Position = new Vector2f(width+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
+                AliveCells.Append(new Vertex(){Position = new Vector2f(boxOffset+(width*t[i].Item1),length+(length*t[i].Item2)),Color=Color.Black});
             }
         }
     }

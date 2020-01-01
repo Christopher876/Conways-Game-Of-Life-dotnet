@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace game_of_life.tests
 {
-    public class game_of_life_canvas_behavior
+    public class GameOfLifeCanvasBehavior
     {
         bool isRunning = false;
 

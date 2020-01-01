@@ -12,40 +12,25 @@ namespace game_of_life
 {
     public class Screen
     {
-        private string title;
-        private VideoMode videoMode;
-        private RenderWindow window;
-        private View view;
-        private readonly uint fontSize;
-        private Font sourceCodeFont;
-        private Text fps;
-        private Color backgroundColor;
-        private uint panSpeed = 50;
-        private Canvas canvas;
-        public Screen(uint width,uint height,string title){
-            this.videoMode = new VideoMode();
-            this.videoMode.Width = width;
-            this.videoMode.Height = height;
-            this.window = new RenderWindow(videoMode,this.title,Styles.Default);
+        private readonly string title;
+        private readonly RenderWindow window;
+        private readonly View gameView;
+        private readonly Color backgroundColor;
+        private const uint PanSpeed = 50;
+        private readonly Canvas canvas;
+        
+        public Screen(uint width,uint height,string title, Canvas canvas)
+        {
+            this.window = new RenderWindow(new VideoMode {Width = width, Height = height},this.title,Styles.Default);
             this.window.SetFramerateLimit(60);
             this.title = title;
-            this.fontSize = (uint)(window.Size.X/9/2);
-            this.sourceCodeFont = new Font(@"SourceCodeVariable-Roman.ttf");
 
-            this.view = window.GetView();
-            this.view.Center = new Vector2f(2510,1340);
-            this.window.SetView(this.view);
+            this.gameView = window.GetView();
+            this.gameView.Center = (Vector2f)window.Size;
+            this.window.SetView(this.gameView);
             
-            this.fps = new Text(){
-                FillColor = Color.Blue,
-                Font = sourceCodeFont,
-                Position = new Vector2f(view.Center.X-380,view.Center.Y-300),
-                Style = Text.Styles.Bold
-            };
             this.backgroundColor = Color.White;
-
-            this.canvas = new Canvas(23,27);
-
+            
             //Setup key events
             this.window.KeyPressed += Window_KeyPressed;
             //Setup Window Events
@@ -54,10 +39,11 @@ namespace game_of_life
                 Environment.Exit(Environment.ExitCode);
             };
             this.window.Resized += (sender,e) => {
-                this.view.Size = (Vector2f)window.Size * 2;
-                this.view.Center = new Vector2f(2510,1340);
-                this.window.SetView(this.view);
+                this.gameView.Size = (Vector2f)window.Size;
+                this.gameView.Center = new Vector2f(2510,1340);
+                this.window.SetView(this.gameView);
             };
+            this.canvas = canvas;
         }
 
         private void Window_KeyPressed(object sender, KeyEventArgs e)
@@ -67,69 +53,57 @@ namespace game_of_life
                     window.Close();
                     break;
                 case Keyboard.Key.Down:
-                    view.Center = new Vector2f(view.Center.X,view.Center.Y+panSpeed);
-                    window.SetView(view);
+                    gameView.Center = new Vector2f(gameView.Center.X,gameView.Center.Y+PanSpeed);
+                    window.SetView(gameView);
                     break;
                 case Keyboard.Key.Up:
-                    view.Center = new Vector2f(view.Center.X,view.Center.Y-panSpeed);
-                    window.SetView(view);
+                    gameView.Center = new Vector2f(gameView.Center.X,gameView.Center.Y-PanSpeed);
+                    window.SetView(gameView);
                     break;
                 case Keyboard.Key.Left:
-                    view.Center = new Vector2f(view.Center.X-panSpeed,view.Center.Y);
-                    window.SetView(view);
+                    gameView.Center = new Vector2f(gameView.Center.X-PanSpeed,gameView.Center.Y);
+                    window.SetView(gameView);
                     break;
                 case Keyboard.Key.Right:
-                    view.Center = new Vector2f(view.Center.X+panSpeed,view.Center.Y);
-                    window.SetView(view);
+                    gameView.Center = new Vector2f(gameView.Center.X+PanSpeed,gameView.Center.Y);
+                    window.SetView(gameView);
                     break;
                 case Keyboard.Key.Z:
-                    view.Zoom(1.1f);
-                    fps.Position = new Vector2f(view.Center.X-380,view.Center.Y-300);
-                    window.SetView(view);
+                    gameView.Zoom(1.1f);
+                    window.SetView(gameView);
                     break;
                 case Keyboard.Key.X:
-                    view.Zoom(0.9f);
-                    fps.Position = new Vector2f(view.Size.X-380,view.Size.Y-300);
-                    window.SetView(view);
-                    Math.Clamp(view.Size.X,0,1584);
-                    Math.Clamp(view.Size.Y,0,1188);
+                    gameView.Zoom(0.9f);
+                    window.SetView(gameView);
+                    Math.Clamp(gameView.Size.X,0,1584);
+                    Math.Clamp(gameView.Size.Y,0,1188);
                     break;
                 case Keyboard.Key.G:
                     canvas.KillAllCells();
-                    canvas.GenerateStarters(7000,11000);
+                    canvas.GenerateStarters(1000,5000);
                     break;
                 case Keyboard.Key.K:
                     canvas.KillAllCells();
                     break;
             }
-            Console.WriteLine($"Camera View: {view.Center}");            
-            
         }
 
         public void Game(){
-            view.Center = new Vector2f(0,0);
-            window.SetView(view);
+            gameView.Center = new Vector2f(0,0);
+            window.SetView(gameView);
 
-            canvas.CreateCanvas(700,700);
-            
             Clock clock = new Clock();
             while(window.IsOpen){
                 //Calculate framerate
-                float Framerate = 1f / clock.ElapsedTime.AsSeconds();
+                float framerate = 1f / clock.ElapsedTime.AsSeconds();
                 clock.Restart();
-
+                
                 canvas.DrawCells(2);
-
                 window.Clear(backgroundColor);
                 window.DispatchEvents();
-
-                //Draw fps
-                fps.DisplayedString = String.Format("{0:0.##}",Framerate);
-                fps.Position = new Vector2f(view.Center.X-380,view.Center.Y-300);                
-                window.Draw(fps);
-
-                window.Draw(canvas.grid);
-                window.Draw(canvas.aliveCells);
+                
+                window.Draw(canvas.Grid);
+                window.Draw(canvas.AliveCells);
 
                 window.Display();
                 Thread.Sleep(10); //Sleep here so that the game does not run too fast
