@@ -5,3 +5,4 @@ The goals of this project are to:
 - Show how something simple can make something very complex.
 - Optimizing code and rendering graphics by using more lower level objects such as, Vertex Arrays.
 - Properly write C# XML documentation for every function.
+- Use Unit testing to ensure that nothing else within the program breaks when the source is modified.
